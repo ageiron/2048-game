@@ -12,7 +12,11 @@
 
 ## Purpose
 
-TBD — describe what this device does once running.
+A single-player 2048 puzzle game running on the device's touchscreen. Swipe
+up/down/left/right on the 4×4 board to slide and merge tiles; reach 2048 to
+win. Tap "New Game" to reset. Score is shown top-right; the game does not
+persist score/best-score across reboots. An "Auto Play" toggle lets the
+device play itself using a heuristic solver (see Non-functional requirements).
 
 ## Hardware
 
@@ -67,16 +71,35 @@ board-specific (applies to every project on this template) rather than project-s
 
 ## Non-functional requirements
 
-TBD.
+- Single-finger swipe gestures via LVGL's built-in gesture recognizer
+  (`LV_EVENT_GESTURE` / `lv_indev_get_gesture_dir`) — no extra input library.
+  The listener must be on the screen object, not the board: every object with
+  a parent gets LVGL's default `GESTURE_BUBBLE` flag, so the event bubbles
+  past any sub-widget listener up to the first ancestor without it.
+- Auto-play solver (`src/main.cpp`, `choose_best_move`/`expected_score`/
+  `score_board`): 2-ply expectimax (own move → every possible random tile
+  spawn → best reply) scored by a heuristic combining corner/monotonicity
+  weighting, open-cell count, and neighbour smoothness. Runs from an LVGL
+  timer (400 ms tick) inside the LVGL lock, so search depth is deliberately
+  capped at 2 plies to avoid stalling screen redraws on this MCU.
+- No WiFi/network dependency for gameplay (ESP-HOSTED stack is still wired up
+  from the template but unused; see `docs/BRINGUP.md` if removing it later).
 
 ## Success criteria
 
-TBD.
+- Swiping in all 4 directions correctly slides/merges tiles per standard 2048
+  rules (verified in `src/main.cpp`'s `slide_line`/`move_board`).
+- Game-over and win states are detected and shown; "New Game" resets cleanly.
 
 ## Out of scope
 
-TBD.
+- Score persistence (NVS/best-score), animations/tile-slide transitions,
+  undo, and multiplayer/network features.
 
 ## Change log
 
 - 2026-08-11 — Project created from jc4880p443c-template.
+- 2026-08-11 — Implemented 2048 gameplay in `src/main.cpp`: 4×4 LVGL board,
+  swipe-gesture input, score tracking, win/game-over detection, New Game button.
+- 2026-08-11 — Added Auto Play: heuristic 2-ply expectimax solver with a
+  corner/openness/smoothness scoring function and a toggle button.
