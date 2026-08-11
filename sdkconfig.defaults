@@ -1,0 +1,123 @@
+# ESP-IDF sdkconfig defaults for JC4880P443C_I_W
+# Board: Guition JC4880P443C_I_W (ESP32-P4 + ESP32-C6 co-processor)
+# Display: 4.3" IPS 480x800 MIPI-DSI, ST7701 controller
+# Touch: Goodix GT911 via I2C (SDA=GPIO7, SCL=GPIO8)
+# WiFi: Via ESP32-C6 co-processor over SDIO (ESP-HOSTED protocol)
+#
+# Every option below was arrived at by trial and error bringing up this exact
+# board. See docs/BRINGUP.md before changing any of them.
+
+# --- Target ---
+CONFIG_IDF_TARGET="esp32p4"
+
+# --- Chip revision ---
+# JC4880P443C_I_W uses ESP32-P4 rev 1.x (ECO2). Rev <3.0 and >=3.0 have
+# fundamentally different memory maps; selecting the wrong one causes startup
+# to zero out the ROM's spi-flash data pointer (0x4ff3ffe8) and crash.
+CONFIG_ESP32P4_SELECTS_REV_LESS_V3=y
+CONFIG_ESP32P4_REV_MIN_100=y
+
+# --- Flash (16MB DIO) ---
+# DIO matches vendor factory firmware and the ESP32-P4 ROM bootstrap default.
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+
+# --- Partition table offset ---
+# Default 0x8000; vendor bootloader (24KB) fits before this with room to spare.
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# --- PSRAM (32MB Octal 200 MHz) ---
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_200M=y
+# CONFIG_SPIRAM_BOOT_INIT is not set — vendor bootloader already inits PSRAM;
+# letting it re-init from the app causes a null-deref in startup. Call
+# esp_psram_init() explicitly at the top of app_main() instead (see main.cpp
+# and docs/BRINGUP.md — "PSRAM not available in heap").
+CONFIG_SPIRAM_ALLOW_STACK_EXTERNAL_MEMORY=y
+# Add PSRAM to the heap with MALLOC_CAP_SPIRAM so frame buffer allocation succeeds.
+# Without this, heap_caps_malloc(size, MALLOC_CAP_SPIRAM) always returns NULL.
+CONFIG_SPIRAM_USE_CAPS_ALLOC=y
+
+# --- Cache ---
+CONFIG_CACHE_L2_CACHE_256KB=y
+
+# --- FreeRTOS ---
+CONFIG_FREERTOS_HZ=1000
+
+# --- Main task stack (LVGL needs extra headroom) ---
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=10240
+
+# --- Compiler optimization ---
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+
+# --- BSP (pulled in transitively — BSP display init is NOT used, see
+# docs/BRINGUP.md "BSP does not support this panel". These options only
+# configure Kconfig defaults for the BSP component itself.) ---
+CONFIG_BSP_LCD_TYPE_1024_600=y
+CONFIG_BSP_LCD_COLOR_FORMAT_RGB565=y
+CONFIG_BSP_LCD_DPI_BUFFER_NUMS=1
+CONFIG_BSP_DISPLAY_BRIGHTNESS_LEDC_CH=1
+CONFIG_BSP_I2C_NUM=0
+CONFIG_BSP_I2C_CLK_SPEED_HZ=400000
+CONFIG_BSP_SD_MOUNT_POINT="/sdcard"
+CONFIG_BSP_SPIFFS_MOUNT_POINT="/spiffs"
+CONFIG_BSP_SPIFFS_PARTITION_LABEL="storage"
+CONFIG_BSP_SPIFFS_MAX_FILES=5
+
+# =============================================================================
+# ESP-HOSTED: WiFi via ESP32-C6 co-processor over SDIO
+# GPIO: CLK=18, CMD=19, D0=14, D1=15, D2=16, D3=17, Reset=54
+#
+# Remove this whole block (and the espressif__esp_hosted /
+# espressif__esp_wifi_remote REQUIRES in src/CMakeLists.txt +
+# idf_component.yml) if your project doesn't need WiFi.
+# =============================================================================
+
+# Enable WiFi Remote (ESP-HOSTED backend) — required for C6 WiFi to work
+CONFIG_ESP_WIFI_REMOTE_LIBRARY_HOSTED=y
+CONFIG_ESP_HOSTED_ENABLED=y
+
+# SDIO transport for P4 <-> C6 communication
+CONFIG_ESP_HOSTED_SDIO_HOST_INTERFACE=y
+
+# C6 is the slave
+CONFIG_SLAVE_IDF_TARGET_ESP32C6=y
+
+# GPIO preset for P4 Function EV Board (matches JC4880P443C wiring)
+CONFIG_ESP_HOSTED_P4_DEV_BOARD_FUNC_BOARD=y
+
+# WiFi remote buffer tuning
+CONFIG_WIFI_RMT_STATIC_RX_BUFFER_NUM=16
+CONFIG_WIFI_RMT_DYNAMIC_RX_BUFFER_NUM=64
+CONFIG_WIFI_RMT_DYNAMIC_TX_BUFFER_NUM=64
+CONFIG_WIFI_RMT_AMPDU_TX_ENABLED=y
+CONFIG_WIFI_RMT_TX_BA_WIN=32
+CONFIG_WIFI_RMT_AMPDU_RX_ENABLED=y
+CONFIG_WIFI_RMT_RX_BA_WIN=32
+
+# LWIP TCP/IP optimizations
+CONFIG_LWIP_TCP_SND_BUF_DEFAULT=65534
+CONFIG_LWIP_TCP_WND_DEFAULT=65534
+CONFIG_LWIP_TCP_RECVMBOX_SIZE=64
+CONFIG_LWIP_UDP_RECVMBOX_SIZE=64
+CONFIG_LWIP_TCPIP_RECVMBOX_SIZE=64
+CONFIG_LWIP_TCP_SACK_OUT=y
+
+# --- LVGL ---
+CONFIG_LV_FONT_MONTSERRAT_14=y
+CONFIG_LV_FONT_MONTSERRAT_16=y
+CONFIG_LV_FONT_MONTSERRAT_18=y
+CONFIG_LV_FONT_MONTSERRAT_32=y
+CONFIG_LV_USE_DRAW_SW_ASM=n
+
+# --- Console: use built-in USB-Serial/JTAG (COM6) for both output and input ---
+# Enables bidirectional host <-> device communication over the single USB-JTAG
+# cable. ESP-IDF startup auto-installs the driver before app_main so
+# usb_serial_jtag_read_bytes() can receive data from the PC. Remove this if
+# your project only needs log output. See docs/BRINGUP.md — "USB-JTAG data
+# reception".
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+
+# --- Logging ---
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y

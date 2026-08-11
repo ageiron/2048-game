@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "pio run",
+            "problemMatcher": [],
+            "detail": "Build the esp32p4 environment (downloads ESP-IDF on first run)"
+        },
+        {
+            "label": "Upload",
+            "type": "shell",
+            "command": "pio run --target upload",
+            "problemMatcher": []
+        },
+        {
+            "label": "Monitor",
+            "type": "shell",
+            "command": "pio device monitor",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build + Upload + Monitor",
+            "type": "shell",
+            "command": "pio run --target upload && pio device monitor",
+            "problemMatcher": []
+        },
+        {
+            "label": "Test",
+            "type": "shell",
+            "command": "pio test | Tee-Object -FilePath tests/logs/$(Get-Date -Format yyyyMMdd_HHmmss).log",
+            "problemMatcher": [],
+            "detail": "NOTE: ESP-IDF native tests require test/idf_component.yml — see docs"
+        },
+        {
+            "label": "Sync (commit + push)",
+            "type": "shell",
+            "command": "git add -p && git commit && git push",
+            "problemMatcher": []
+        }
+    ]
+}

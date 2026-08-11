@@ -1,0 +1,33 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Build output
+build/
+out/
+*.o
+*.obj
+.pio/
+
+# ESP-IDF managed components (auto-downloaded by idf-component-manager)
+managed_components/
+dependencies.lock
+
+# ESP-IDF auto-generated files
+sdkconfig
+sdkconfig.esp32p4
+/CMakeLists.txt
+
+# Editor
+.vscode/*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Test artifacts
+tests/logs/
+test-results/

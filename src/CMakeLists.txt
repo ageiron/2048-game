@@ -1,0 +1,24 @@
+idf_component_register(
+    SRCS
+        "main.cpp"
+        "esp_lcd_st7701.c"
+        "esp_lcd_st7701_mipi.c"
+        "esp_lcd_st7701_rgb.c"
+    INCLUDE_DIRS "."
+    REQUIRES
+        nvs_flash
+        esp_timer
+        esp_event
+        esp_netif
+        esp_wifi
+        driver
+        esp_lcd
+        esp_hw_support
+        json
+        espressif__esp_lvgl_port
+        espressif__esp_lcd_touch_gt911
+        espressif__esp_lcd_touch
+        espressif__esp_hosted
+        espressif__esp_wifi_remote
+        espressif__esp32_p4_function_ev_board
+)

@@ -1,0 +1,29 @@
+dependencies:
+  idf: ">=5.3"
+  # LVGL graphics library
+  lvgl/lvgl:
+    version: "^9.2"
+    public: true
+  # ESP-HOSTED components for WiFi via ESP32-C6 co-processor.
+  # Remove these two (and the matching REQUIRES in CMakeLists.txt +
+  # sdkconfig.defaults ESP-HOSTED block) if your project doesn't need WiFi.
+  #
+  # esp_hosted is PINNED below 3.0. esp_hosted >=3.0 switched to a
+  # `"SHELL:-include ..."` compile option that PlatformIO's Windows flag
+  # extraction mis-parses (splits -include from its filename, which then
+  # gets passed to gcc as a second source file -> "cannot specify '-o' ...
+  # with multiple files" on every compile). See docs/BRINGUP.md.
+  # (esp_wifi_remote has no 2.x/3.x line as of this writing — leave it
+  # unconstrained; it's esp_hosted's version that needs pinning.)
+  espressif/esp_wifi_remote:
+    version: "*"
+  espressif/esp_hosted:
+    version: ">=2.11,<3.0"
+  # BSP for ESP32-P4 Function EV Board.
+  # NOTE: BSP display init is NOT used — it only supports 1024x600/1280x800, not
+  # this board's 480x800 ST7701. The BSP is retained as a component dependency
+  # because other managed components pull it in transitively. Display and touch
+  # are initialised directly in main.cpp using the ST7701 vendor driver files
+  # in src/ and the esp_lcd_touch_gt911 component.
+  espressif/esp32_p4_function_ev_board:
+    version: "*"

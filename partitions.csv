@@ -1,0 +1,7 @@
+# Partition table for JC4880P443C_I_W (16 MB flash)
+# Partition table at 0x8000 (default). Vendor bootloader fits at 0x2000-0x7D8F.
+# Name,   Type, SubType,  Offset,   Size,   Flags
+nvs,      data, nvs,      0x9000,   0x6000,
+phy_init, data, phy,      0xF000,   0x1000,
+factory,  app,  factory,  0x20000,  0x4E0000,
+storage,  data, spiffs,   0x500000, 0x100000,
